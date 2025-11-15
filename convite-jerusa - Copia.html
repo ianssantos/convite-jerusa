@@ -30,100 +30,12 @@
             line-height: 1.6;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><path fill="%23e8b4b4" opacity="0.1" d="M30,30 Q50,10 70,30 T90,50 Q70,70 50,90 T30,70 Q10,50 30,30 Z"/></svg>');
             background-size: 200px;
-            overflow-x: hidden;
-        }
-        
-        /* Tela de Abertura */
-        .tela-abertura {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--rosa-cha), var(--marrom-claro));
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 1s ease-out, transform 1s ease-out;
-        }
-        
-        .tela-abertura.fechando {
-            opacity: 0;
-            transform: scale(1.1);
-        }
-        
-        .mensagem-abertura {
-            text-align: center;
-            color: white;
-            z-index: 1002;
-        }
-        
-        .mensagem-abertura h1 {
-            font-size: 3.5rem;
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(93, 64, 55, 0.4);
-            animation: pulse 2s infinite;
-        }
-        
-        .mensagem-abertura p {
-            font-size: 1.5rem;
-            opacity: 0.9;
-        }
-        
-        .btn-abrir {
-            margin-top: 30px;
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        
-        .btn-abrir:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
-        }
-        
-        /* Serpentina */
-        .serpentina {
-            position: absolute;
-            width: 8px;
-            height: 20px;
-            opacity: 0;
-            z-index: 1001;
-        }
-        
-        .caixa-presente {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0;
-            z-index: 1001;
-            animation: flutuar 3s ease-in-out infinite;
-        }
-        
-        @keyframes flutuar {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(10deg); }
         }
         
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 1s ease, transform 1s ease;
-        }
-        
-        .container.carregado {
-            opacity: 1;
-            transform: translateY(0);
         }
         
         header {
@@ -521,29 +433,11 @@
             .container {
                 padding: 15px;
             }
-            
-            .mensagem-abertura h1 {
-                font-size: 2.5rem;
-            }
-            
-            .mensagem-abertura p {
-                font-size: 1.2rem;
-            }
         }
     </style>
 </head>
 <body>
-    <!-- Tela de Abertura -->
-    <div class="tela-abertura" id="telaAbertura">
-        <div class="mensagem-abertura">
-            <h1>🎉 50 Anos! 🎉</h1>
-            <p>Jerusa está te convidando!</p>
-            <button class="btn-abrir" id="btnAbrirConvite">Abrir Convite</button>
-        </div>
-    </div>
-
-    <!-- Conteúdo Principal -->
-    <div class="container" id="conteudoPrincipal">
+    <div class="container">
         <header>
             <h1>50 Anos de Jerusa</h1>
             <p class="subtitulo">🙏 Deus tem sido fiel em cada capítulo da minha história. Venha agradecer e festejar comigo meus 50 anos.</p>
@@ -660,333 +554,214 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Elementos da tela de abertura
-        const telaAbertura = document.getElementById('telaAbertura');
-        const btnAbrirConvite = document.getElementById('btnAbrirConvite');
-        const conteudoPrincipal = document.getElementById('conteudoPrincipal');
-
-        // Verificar se já foi mostrado antes
-        const jaMostrado = localStorage.getItem('conviteAberto');
+        // Data do aniversário
+        const dataAniversario = new Date('2025-12-24T19:00:00');
         
-        if (jaMostrado) {
-            // Já foi mostrado antes, pular a animação
-            telaAbertura.style.display = 'none';
-            conteudoPrincipal.classList.add('carregado');
-        } else {
-            // Primeira vez - mostrar animação
-            criarSerpentina();
-            criarCaixasPresentes();
-        }
-
-        // Função para criar efeito de serpentina
-        function criarSerpentina() {
-            const cores = ['#e8b4b4', '#d4a5a5', '#f7e6e6', '#a78a7f', '#f5f1e8'];
-            const telaAbertura = document.getElementById('telaAbertura');
+        // Elementos DOM
+        const contadorDiasEl = document.getElementById('contador-dias');
+        const formConfirmacao = document.getElementById('form-confirmacao');
+        const btnConfirmar = document.getElementById('btn-confirmar');
+        const totalConvidadosEl = document.getElementById('total-convidados');
+        const listaConvidadosEl = document.getElementById('lista-convidados');
+        const btnVisualizarConvidados = document.getElementById('btn-visualizar-convidados');
+        const formSenha = document.getElementById('form-senha');
+        const btnVerificarSenha = document.getElementById('btn-verificar-senha');
+        const mensagemErro = document.getElementById('mensagem-erro');
+        
+        // Senha de acesso (pode ser alterada)
+        const SENHA_CORRETA = "@surej";
+        
+        // Atualizar contador de dias
+        function atualizarContador() {
+            const hoje = new Date();
+            const diferenca = dataAniversario - hoje;
+            const dias = Math.ceil(diferenca / (1000 * 60 * 60 * 24));
             
-            for (let i = 0; i < 150; i++) {
-                const serpentina = document.createElement('div');
-                serpentina.className = 'serpentina';
-                
-                // Posição aleatória
-                const left = Math.random() * 100;
-                const top = -20;
-                
-                // Cor aleatória
-                const cor = cores[Math.floor(Math.random() * cores.length)];
-                
-                serpentina.style.left = left + 'vw';
-                serpentina.style.top = top + 'px';
-                serpentina.style.backgroundColor = cor;
-                
-                // Animação
-                const duration = 2 + Math.random() * 3;
-                const delay = Math.random() * 2;
-                
-                serpentina.style.animation = `
-                    cair ${duration}s ease-in ${delay}s forwards
-                `;
-                
-                telaAbertura.appendChild(serpentina);
-            }
-            
-            // Adicionar keyframes dinamicamente
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes cair {
-                    0% {
-                        transform: translateY(0) rotate(0deg);
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translateY(100vh) rotate(360deg);
-                        opacity: 0;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
-        // Função para criar caixas de presente
-        function criarCaixasPresentes() {
-            const emojis = ['🎁', '🎀', '🎊', '🎉', '💝', '🌸'];
-            const telaAbertura = document.getElementById('telaAbertura');
-            
-            for (let i = 0; i < 12; i++) {
-                const caixa = document.createElement('div');
-                caixa.className = 'caixa-presente';
-                caixa.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                
-                // Posição aleatória
-                const left = 10 + Math.random() * 80;
-                const top = 10 + Math.random() * 80;
-                
-                caixa.style.left = left + 'vw';
-                caixa.style.top = top + 'vh';
-                
-                // Delay aleatório
-                const delay = Math.random() * 2;
-                caixa.style.animationDelay = delay + 's';
-                
-                telaAbertura.appendChild(caixa);
-                
-                // Mostrar com delay
-                setTimeout(() => {
-                    caixa.style.opacity = '1';
-                }, delay * 1000);
-            }
-        }
-
-        // Abrir convite
-        btnAbrirConvite.addEventListener('click', function() {
-            // Marcar como já mostrado
-            localStorage.setItem('conviteAberto', 'true');
-            
-            // Adicionar efeito de fechamento
-            telaAbertura.classList.add('fechando');
-            
-            // Mostrar conteúdo principal após animação
-            setTimeout(() => {
-                telaAbertura.style.display = 'none';
-                conteudoPrincipal.classList.add('carregado');
-            }, 1000);
-        });
-
-        // Se já foi mostrado antes, inicializar normalmente
-        if (jaMostrado) {
-            inicializarConvite();
-        } else {
-            // Inicializar quando abrir o convite
-            btnAbrirConvite.addEventListener('click', inicializarConvite);
-        }
-
-        function inicializarConvite() {
-            // Data do aniversário
-            const dataAniversario = new Date('2025-12-24T19:00:00');
-            
-            // Elementos DOM
-            const contadorDiasEl = document.getElementById('contador-dias');
-            const formConfirmacao = document.getElementById('form-confirmacao');
-            const btnConfirmar = document.getElementById('btn-confirmar');
-            const totalConvidadosEl = document.getElementById('total-convidados');
-            const listaConvidadosEl = document.getElementById('lista-convidados');
-            const btnVisualizarConvidados = document.getElementById('btn-visualizar-convidados');
-            const formSenha = document.getElementById('form-senha');
-            const btnVerificarSenha = document.getElementById('btn-verificar-senha');
-            const mensagemErro = document.getElementById('mensagem-erro');
-            
-            // Senha de acesso (pode ser alterada)
-            const SENHA_CORRETA = "@surej";
-            
-            // Atualizar contador de dias
-            function atualizarContador() {
-                const hoje = new Date();
-                const diferenca = dataAniversario - hoje;
-                const dias = Math.ceil(diferenca / (1000 * 60 * 60 * 24));
-                
-                if (dias === 0) {
-                    const horas = Math.ceil((dataAniversario - hoje) / (1000 * 60 * 60));
-                    if (horas > 0) {
-                        contadorDiasEl.innerHTML = `
-                            <div class="mensagem-hoje">
-                                <h2>É HOJE! 🎉</h2>
-                                <p>Faltam apenas ${horas} horas para a festa!</p>
-                            </div>
-                        `;
-                    } else {
-                        contadorDiasEl.innerHTML = `
-                            <div class="mensagem-hoje">
-                                <h2>A FESTA COMEÇOU! 🎊</h2>
-                                <p>Seja bem-vindo(a)!</p>
-                            </div>
-                        `;
-                    }
-                } else if (dias < 0) {
+            if (dias === 0) {
+                const horas = Math.ceil((dataAniversario - hoje) / (1000 * 60 * 60));
+                if (horas > 0) {
                     contadorDiasEl.innerHTML = `
-                        <div style="text-align: center; color: var(--marrom-claro); padding: 20px;">
-                            <h2>A festa já aconteceu! 🥳</h2>
-                            <p>Obrigado a todos que tornaram este dia especial!</p>
+                        <div class="mensagem-hoje">
+                            <h2>É HOJE! 🎉</h2>
+                            <p>Faltam apenas ${horas} horas para a festa!</p>
                         </div>
                     `;
                 } else {
                     contadorDiasEl.innerHTML = `
-                        <p>Faltam apenas</p>
-                        <div class="tempo">
-                            <div class="tempo-item">
-                                <div class="tempo-numero">${dias}</div>
-                                <div class="tempo-texto">dias</div>
-                            </div>
+                        <div class="mensagem-hoje">
+                            <h2>A FESTA COMEÇOU! 🎊</h2>
+                            <p>Seja bem-vindo(a)!</p>
                         </div>
-                        <p>para a grande celebração!</p>
                     `;
                 }
+            } else if (dias < 0) {
+                contadorDiasEl.innerHTML = `
+                    <div style="text-align: center; color: var(--marrom-claro); padding: 20px;">
+                        <h2>A festa já aconteceu! 🥳</h2>
+                        <p>Obrigado a todos que tornaram este dia especial!</p>
+                    </div>
+                `;
+            } else {
+                contadorDiasEl.innerHTML = `
+                    <p>Faltam apenas</p>
+                    <div class="tempo">
+                        <div class="tempo-item">
+                            <div class="tempo-numero">${dias}</div>
+                            <div class="tempo-texto">dias</div>
+                        </div>
+                    </div>
+                    <p>para a grande celebração!</p>
+                `;
             }
-            
-            // Carregar confirmações do Firebase (apenas contagem)
-            function carregarConfirmacoes() {
-                db.collection('confirmacoes')
-                    .onSnapshot((snapshot) => {
-                        let totalPessoas = 0;
-                        
+        }
+        
+        // Carregar confirmações do Firebase (apenas contagem)
+        function carregarConfirmacoes() {
+            db.collection('confirmacoes')
+                .onSnapshot((snapshot) => {
+                    let totalPessoas = 0;
+                    
+                    snapshot.forEach((doc) => {
+                        const convidado = doc.data();
+                        const numAcompanhantes = parseInt(convidado.acompanhantes);
+                        totalPessoas += 1 + numAcompanhantes;
+                    });
+                    
+                    totalConvidadosEl.innerHTML = totalPessoas;
+                }, (error) => {
+                    console.error('Erro ao carregar confirmações:', error);
+                    totalConvidadosEl.innerHTML = '0';
+                });
+        }
+        
+        // Carregar lista completa de convidados (após autenticação)
+        function carregarListaCompleta() {
+            db.collection('confirmacoes')
+                .orderBy('dataConfirmacao', 'desc')
+                .get()
+                .then((snapshot) => {
+                    let listaHTML = '';
+                    
+                    if (snapshot.empty) {
+                        listaHTML = '<p style="text-align: center; padding: 20px;">Nenhum convidado confirmado ainda.</p>';
+                    } else {
                         snapshot.forEach((doc) => {
                             const convidado = doc.data();
                             const numAcompanhantes = parseInt(convidado.acompanhantes);
-                            totalPessoas += 1 + numAcompanhantes;
-                        });
-                        
-                        totalConvidadosEl.innerHTML = totalPessoas;
-                    }, (error) => {
-                        console.error('Erro ao carregar confirmações:', error);
-                        totalConvidadosEl.innerHTML = '0';
-                    });
-            }
-            
-            // Carregar lista completa de convidados (após autenticação)
-            function carregarListaCompleta() {
-                db.collection('confirmacoes')
-                    .orderBy('dataConfirmacao', 'desc')
-                    .get()
-                    .then((snapshot) => {
-                        let listaHTML = '';
-                        
-                        if (snapshot.empty) {
-                            listaHTML = '<p style="text-align: center; padding: 20px;">Nenhum convidado confirmado ainda.</p>';
-                        } else {
-                            snapshot.forEach((doc) => {
-                                const convidado = doc.data();
-                                const numAcompanhantes = parseInt(convidado.acompanhantes);
-                                
-                                const textoAcompanhantes = numAcompanhantes > 0 ? 
-                                    `+${numAcompanhantes} acompanhante(s)` : ' (Sozinho(a))';
-                                
-                                // Formatar data
-                                const data = convidado.dataConfirmacao.toDate();
-                                const dataFormatada = data.toLocaleDateString('pt-BR');
-                                
-                                listaHTML += `
-                                    <div class="convidado-item">
-                                        <div>
-                                            <strong>${convidado.nome}</strong><br>
-                                            <small>Confirmado em: ${dataFormatada}</small>
-                                        </div>
-                                        <span>${textoAcompanhantes}</span>
+                            
+                            const textoAcompanhantes = numAcompanhantes > 0 ? 
+                                `+${numAcompanhantes} acompanhante(s)` : ' (Sozinho(a))';
+                            
+                            // Formatar data
+                            const data = convidado.dataConfirmacao.toDate();
+                            const dataFormatada = data.toLocaleDateString('pt-BR');
+                            
+                            listaHTML += `
+                                <div class="convidado-item">
+                                    <div>
+                                        <strong>${convidado.nome}</strong><br>
+                                        <small>Confirmado em: ${dataFormatada}</small>
                                     </div>
-                                `;
-                            });
-                        }
-                        
-                        listaConvidadosEl.innerHTML = listaHTML;
-                        listaConvidadosEl.style.display = 'block';
-                    })
-                    .catch((error) => {
-                        console.error('Erro ao carregar lista completa:', error);
-                        listaConvidadosEl.innerHTML = '<p style="text-align: center; color: var(--marrom-claro);">Erro ao carregar lista. Tente novamente.</p>';
-                    });
+                                    <span>${textoAcompanhantes}</span>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    listaConvidadosEl.innerHTML = listaHTML;
+                    listaConvidadosEl.style.display = 'block';
+                })
+                .catch((error) => {
+                    console.error('Erro ao carregar lista completa:', error);
+                    listaConvidadosEl.innerHTML = '<p style="text-align: center; color: var(--marrom-claro);">Erro ao carregar lista. Tente novamente.</p>';
+                });
+        }
+        
+        // Manipular envio do formulário de confirmação
+        formConfirmacao.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('nome').value.trim();
+            const acompanhantes = document.getElementById('acompanhantes').value;
+            
+            if (!nome) {
+                alert('Por favor, digite seu nome.');
+                return;
             }
             
-            // Manipular envio do formulário de confirmação
-            formConfirmacao.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const nome = document.getElementById('nome').value.trim();
-                const acompanhantes = document.getElementById('acompanhantes').value;
-                
-                if (!nome) {
-                    alert('Por favor, digite seu nome.');
-                    return;
-                }
-                
-                // Desabilitar botão para evitar múltiplos cliques
-                btnConfirmar.disabled = true;
-                btnConfirmar.textContent = 'Confirmando...';
-                
-                try {
-                    // Verificar se o nome já existe (case insensitive)
-                    const snapshot = await db.collection('confirmacoes')
-                        .where('nome', '==', nome)
-                        .get();
-                    
-                    if (!snapshot.empty) {
-                        alert(`${nome}, você já confirmou sua presença! ❤️`);
-                    } else {
-                        // Adicionar nova confirmação
-                        await db.collection('confirmacoes').add({
-                            nome: nome,
-                            acompanhantes: acompanhantes,
-                            dataConfirmacao: new Date(),
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        
-                        alert(`Obrigado, ${nome}! Sua presença foi confirmada com sucesso! 🎉`);
-                        formConfirmacao.reset();
-                    }
-                } catch (error) {
-                    console.error('Erro ao confirmar presença:', error);
-                    alert('Erro ao confirmar presença. Tente novamente.');
-                } finally {
-                    // Reabilitar botão
-                    btnConfirmar.disabled = false;
-                    btnConfirmar.textContent = 'Confirmar Presença';
-                }
-            });
+            // Desabilitar botão para evitar múltiplos cliques
+            btnConfirmar.disabled = true;
+            btnConfirmar.textContent = 'Confirmando...';
             
-            // Mostrar formulário de senha
-            btnVisualizarConvidados.addEventListener('click', function() {
-                formSenha.style.display = 'block';
-                btnVisualizarConvidados.style.display = 'none';
-                mensagemErro.style.display = 'none';
-            });
-            
-            // Verificar senha
-            btnVerificarSenha.addEventListener('click', function() {
-                const senhaDigitada = document.getElementById('senha').value;
+            try {
+                // Verificar se o nome já existe (case insensitive)
+                const snapshot = await db.collection('confirmacoes')
+                    .where('nome', '==', nome)
+                    .get();
                 
-                if (senhaDigitada === SENHA_CORRETA) {
-                    // Senha correta - mostrar lista
-                    formSenha.style.display = 'none';
-                    carregarListaCompleta();
-                    mensagemErro.style.display = 'none';
+                if (!snapshot.empty) {
+                    alert(`${nome}, você já confirmou sua presença! ❤️`);
                 } else {
-                    // Senha incorreta
-                    mensagemErro.style.display = 'block';
-                    document.getElementById('senha').value = '';
-                    document.getElementById('senha').focus();
+                    // Adicionar nova confirmação
+                    await db.collection('confirmacoes').add({
+                        nome: nome,
+                        acompanhantes: acompanhantes,
+                        dataConfirmacao: new Date(),
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    
+                    alert(`Obrigado, ${nome}! Sua presença foi confirmada com sucesso! 🎉`);
+                    formConfirmacao.reset();
                 }
-            });
+            } catch (error) {
+                console.error('Erro ao confirmar presença:', error);
+                alert('Erro ao confirmar presença. Tente novamente.');
+            } finally {
+                // Reabilitar botão
+                btnConfirmar.disabled = false;
+                btnConfirmar.textContent = 'Confirmar Presença';
+            }
+        });
+        
+        // Mostrar formulário de senha
+        btnVisualizarConvidados.addEventListener('click', function() {
+            formSenha.style.display = 'block';
+            btnVisualizarConvidados.style.display = 'none';
+            mensagemErro.style.display = 'none';
+        });
+        
+        // Verificar senha
+        btnVerificarSenha.addEventListener('click', function() {
+            const senhaDigitada = document.getElementById('senha').value;
             
-            // Permitir pressionar Enter no campo de senha
-            document.getElementById('senha').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    btnVerificarSenha.click();
-                }
-            });
-            
-            // Inicializar
+            if (senhaDigitada === SENHA_CORRETA) {
+                // Senha correta - mostrar lista
+                formSenha.style.display = 'none';
+                carregarListaCompleta();
+                mensagemErro.style.display = 'none';
+            } else {
+                // Senha incorreta
+                mensagemErro.style.display = 'block';
+                document.getElementById('senha').value = '';
+                document.getElementById('senha').focus();
+            }
+        });
+        
+        // Permitir pressionar Enter no campo de senha
+        document.getElementById('senha').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                btnVerificarSenha.click();
+            }
+        });
+        
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
             atualizarContador();
             carregarConfirmacoes();
             
             // Atualizar contador a cada minuto
             setInterval(atualizarContador, 60000);
-        }
+        });
     </script>
 </body>
 </html>
